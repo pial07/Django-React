@@ -4,18 +4,15 @@ import Loader from "./Loader";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const NoteCardContainer = ({ loading, filteredNewText, searchedNotes }) => {
+const NoteCardContainer = ({
+  loading,
+  filteredNewText,
+  searchedNotes,
+  activeSearch,
+}) => {
   const [notes, setNotes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const filteredNotes =
-    filteredNewText === "BUSINESS"
-      ? notes.filter((note) => note.category == "BUSINESS")
-      : filteredNewText === "PERSONAL"
-      ? notes.filter((note) => note.category == "PERSONAL")
-      : filteredNewText === "IMPORTANT"
-      ? notes.filter((note) => note.category == "IMPORTANT")
-      : notes;
+  // const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -30,15 +27,52 @@ const NoteCardContainer = ({ loading, filteredNewText, searchedNotes }) => {
         console.log(error.message);
       });
   }, []);
+  console.log("searchedNotes:", searchedNotes); // Debugging
+  console.log("searchedcondition:", activeSearch); // Debugging
+  const displayedNotes =
+    searchedNotes && searchedNotes.length > 0 ? searchedNotes : notes;
+
+  const filteredNotes =
+    filteredNewText === "BUSINESS"
+      ? displayedNotes.filter((note) => note.category === "BUSINESS")
+      : filteredNewText === "PERSONAL"
+      ? displayedNotes.filter((note) => note.category === "PERSONAL")
+      : filteredNewText === "IMPORTANT"
+      ? displayedNotes.filter((note) => note.category === "IMPORTANT")
+      : displayedNotes;
+  // Effect to set hasSearched to true when the search is performed
+  // useEffect(() => {
+  //   if (searchedNotes && searchedNotes.length > 0) {
+  //     setHasSearched(true);
+  //   }
+  // }, [searchedNotes]);
+  // // Conditional rendering logic
+
+  let content;
+
+  if (isLoading) {
+    content = <Loader loading={loading} />;
+  } else if (searchedNotes.length === 0 && activeSearch) {
+    // If searchedNotes is empty (no results found) and search has been performed
+    content = (
+      <h1 className="font-bold justify-center text-blue-900">No notes found</h1>
+    );
+  } else if (searchedNotes === "" || searchedNotes === undefined) {
+    // If search field is empty or undefined, show all notes initially
+    content = filteredNotes.map((note) => (
+      <NoteCard key={note.id} note={note} />
+    ));
+  } else {
+    // If searchedNotes contains some notes, display them
+    content = filteredNotes.map((note) => (
+      <NoteCard key={note.id} note={note} />
+    ));
+  }
 
   return (
     <div className="mx-auto mr-10 ml-10">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full p-4 gap-4">
-        {isLoading && <Loader loading={loading} />}
-
-        {filteredNotes.map((note) => (
-          <NoteCard key={note.id} note={note} />
-        ))}
+        {content}
       </div>
     </div>
   );

@@ -2,13 +2,19 @@ import React from "react";
 import Navbar from "../Components/Navbar";
 import { Outlet } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import { useState } from "react";
 
-const MainLayout = ({ searchText, handleSearchText }) => {
+const MainLayout = () => {
+  const [searchedNotes, setSearchedNotes] = useState([]);
+  const [activeSearch, setActiveSearch] = useState(false);
   return (
     <div>
-      <Navbar searchText={searchText} handleSearchText={handleSearchText} />
+      <Navbar
+        searchedNotes={setSearchedNotes}
+        searchTextStatus={setActiveSearch}
+      />
       <ToastContainer />
-      <Outlet />
+      <Outlet context={{ searchedNotes, activeSearch }} />
     </div>
   );
 };
